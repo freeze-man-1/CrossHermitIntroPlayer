@@ -1,0 +1,6 @@
+{
+  "languages": [
+    { "code": "__default__", "name": "Original (Japanese/Chinese)" },
+    { "code": "en", "name": "English (example)", "textures": [0, 22, 23] }
+  ]
+}
