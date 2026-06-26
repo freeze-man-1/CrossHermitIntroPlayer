@@ -1,0 +1,762 @@
+{
+  "version": 1,
+  "opdata": {
+    "source": "OPDATA.BIN",
+    "filesize": 96469768,
+    "count": 48,
+    "format": "ARGB1555",
+    "textures": [
+      {
+        "index": 0,
+        "file": "opdata/opdata_00.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 1,
+        "file": "opdata/opdata_01.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 2,
+        "file": "opdata/opdata_02.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 3,
+        "file": "opdata/opdata_03.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 4,
+        "file": "opdata/opdata_04.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 5,
+        "file": "opdata/opdata_05.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 6,
+        "file": "opdata/opdata_06.png",
+        "w": 512,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 7,
+        "file": "opdata/opdata_07.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 8,
+        "file": "opdata/opdata_08.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 9,
+        "file": "opdata/opdata_09.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 10,
+        "file": "opdata/opdata_10.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 11,
+        "file": "opdata/opdata_11.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 12,
+        "file": "opdata/opdata_12.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 13,
+        "file": "opdata/opdata_13.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 14,
+        "file": "opdata/opdata_14.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 15,
+        "file": "opdata/opdata_15.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 16,
+        "file": "opdata/opdata_16.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 17,
+        "file": "opdata/opdata_17.png",
+        "w": 1024,
+        "h": 512,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 18,
+        "file": "opdata/opdata_18.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 19,
+        "file": "opdata/opdata_19.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 20,
+        "file": "opdata/opdata_20.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 21,
+        "file": "opdata/opdata_21.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 22,
+        "file": "opdata/opdata_22.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 23,
+        "file": "opdata/opdata_23.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 24,
+        "file": "opdata/opdata_24.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 25,
+        "file": "opdata/opdata_25.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 26,
+        "file": "opdata/opdata_26.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 27,
+        "file": "opdata/opdata_27.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 28,
+        "file": "opdata/opdata_28.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 29,
+        "file": "opdata/opdata_29.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 30,
+        "file": "opdata/opdata_30.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 31,
+        "file": "opdata/opdata_31.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 32,
+        "file": "opdata/opdata_32.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 33,
+        "file": "opdata/opdata_33.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 34,
+        "file": "opdata/opdata_34.png",
+        "w": 512,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 35,
+        "file": "opdata/opdata_35.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 36,
+        "file": "opdata/opdata_36.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 37,
+        "file": "opdata/opdata_37.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 38,
+        "file": "opdata/opdata_38.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 39,
+        "file": "opdata/opdata_39.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 40,
+        "file": "opdata/opdata_40.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 41,
+        "file": "opdata/opdata_41.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 42,
+        "file": "opdata/opdata_42.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 43,
+        "file": "opdata/opdata_43.png",
+        "w": 1024,
+        "h": 512,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 44,
+        "file": "opdata/opdata_44.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 45,
+        "file": "opdata/opdata_45.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 46,
+        "file": "opdata/opdata_46.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      },
+      {
+        "index": 47,
+        "file": "opdata/opdata_47.png",
+        "w": 1024,
+        "h": 1024,
+        "magic": 22596,
+        "fmt": 2
+      }
+    ]
+  },
+  "opdata2": {
+    "source": "OPDATA2.BIN",
+    "count": 7,
+    "entries": [
+      {
+        "index": 0,
+        "type": "raw",
+        "file": "opdata2/entry_0.bin",
+        "size": 372
+      },
+      {
+        "index": 1,
+        "type": "raw",
+        "file": "opdata2/entry_1.bin",
+        "size": 24
+      },
+      {
+        "index": 2,
+        "type": "raw",
+        "file": "opdata2/entry_2.bin",
+        "size": 0
+      },
+      {
+        "index": 3,
+        "type": "raw",
+        "file": "opdata2/entry_3.bin",
+        "size": 624
+      },
+      {
+        "index": 4,
+        "type": "raw",
+        "file": "opdata2/entry_4.bin",
+        "size": 740
+      },
+      {
+        "index": 5,
+        "type": "raw",
+        "file": "opdata2/entry_5.bin",
+        "size": 424
+      },
+      {
+        "index": 6,
+        "type": "animation",
+        "nframes": 53,
+        "frames": [
+          {
+            "frame": 0,
+            "file": "opdata2/orb_00.png",
+            "w": 166,
+            "h": 99
+          },
+          {
+            "frame": 1,
+            "file": "opdata2/orb_01.png",
+            "w": 205,
+            "h": 102
+          },
+          {
+            "frame": 2,
+            "file": "opdata2/orb_02.png",
+            "w": 239,
+            "h": 107
+          },
+          {
+            "frame": 3,
+            "file": "opdata2/orb_03.png",
+            "w": 269,
+            "h": 114
+          },
+          {
+            "frame": 4,
+            "file": "opdata2/orb_04.png",
+            "w": 299,
+            "h": 121
+          },
+          {
+            "frame": 5,
+            "file": "opdata2/orb_05.png",
+            "w": 112,
+            "h": 68
+          },
+          {
+            "frame": 6,
+            "file": "opdata2/orb_06.png",
+            "w": 166,
+            "h": 54
+          },
+          {
+            "frame": 7,
+            "file": "opdata2/orb_07.png",
+            "w": 188,
+            "h": 100
+          },
+          {
+            "frame": 8,
+            "file": "opdata2/orb_08.png",
+            "w": 198,
+            "h": 105
+          },
+          {
+            "frame": 9,
+            "file": "opdata2/orb_09.png",
+            "w": 205,
+            "h": 102
+          },
+          {
+            "frame": 10,
+            "file": "opdata2/orb_10.png",
+            "w": 52,
+            "h": 61
+          },
+          {
+            "frame": 11,
+            "file": "opdata2/orb_11.png",
+            "w": 52,
+            "h": 72
+          },
+          {
+            "frame": 12,
+            "file": "opdata2/orb_12.png",
+            "w": 78,
+            "h": 76
+          },
+          {
+            "frame": 13,
+            "file": "opdata2/orb_13.png",
+            "w": 105,
+            "h": 59
+          },
+          {
+            "frame": 14,
+            "file": "opdata2/orb_14.png",
+            "w": 115,
+            "h": 45
+          },
+          {
+            "frame": 15,
+            "file": "opdata2/orb_15.png",
+            "w": 121,
+            "h": 52
+          },
+          {
+            "frame": 16,
+            "file": "opdata2/orb_16.png",
+            "w": 46,
+            "h": 60
+          },
+          {
+            "frame": 17,
+            "file": "opdata2/orb_17.png",
+            "w": 53,
+            "h": 87
+          },
+          {
+            "frame": 18,
+            "file": "opdata2/orb_18.png",
+            "w": 70,
+            "h": 108
+          },
+          {
+            "frame": 19,
+            "file": "opdata2/orb_19.png",
+            "w": 87,
+            "h": 121
+          },
+          {
+            "frame": 20,
+            "file": "opdata2/orb_20.png",
+            "w": 98,
+            "h": 131
+          },
+          {
+            "frame": 21,
+            "file": "opdata2/orb_21.png",
+            "w": 106,
+            "h": 133
+          },
+          {
+            "frame": 22,
+            "file": "opdata2/orb_22.png",
+            "w": 49,
+            "h": 42
+          },
+          {
+            "frame": 23,
+            "file": "opdata2/orb_23.png",
+            "w": 53,
+            "h": 62
+          },
+          {
+            "frame": 24,
+            "file": "opdata2/orb_24.png",
+            "w": 52,
+            "h": 83
+          },
+          {
+            "frame": 25,
+            "file": "opdata2/orb_25.png",
+            "w": 53,
+            "h": 96
+          },
+          {
+            "frame": 26,
+            "file": "opdata2/orb_26.png",
+            "w": 65,
+            "h": 99
+          },
+          {
+            "frame": 27,
+            "file": "opdata2/orb_27.png",
+            "w": 73,
+            "h": 99
+          },
+          {
+            "frame": 28,
+            "file": "opdata2/orb_28.png",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "frame": 29,
+            "file": "opdata2/orb_29.png",
+            "w": 48,
+            "h": 57
+          },
+          {
+            "frame": 30,
+            "file": "opdata2/orb_30.png",
+            "w": 55,
+            "h": 57
+          },
+          {
+            "frame": 31,
+            "file": "opdata2/orb_31.png",
+            "w": 54,
+            "h": 49
+          },
+          {
+            "frame": 32,
+            "file": "opdata2/orb_32.png",
+            "w": 58,
+            "h": 51
+          },
+          {
+            "frame": 33,
+            "file": "opdata2/orb_33.png",
+            "w": 60,
+            "h": 62
+          },
+          {
+            "frame": 34,
+            "file": "opdata2/orb_34.png",
+            "w": 64,
+            "h": 62
+          },
+          {
+            "frame": 35,
+            "file": "opdata2/orb_35.png",
+            "w": 62,
+            "h": 51
+          },
+          {
+            "frame": 36,
+            "file": "opdata2/orb_36.png",
+            "w": 65,
+            "h": 67
+          },
+          {
+            "frame": 37,
+            "file": "opdata2/orb_37.png",
+            "w": 68,
+            "h": 62
+          },
+          {
+            "frame": 38,
+            "file": "opdata2/orb_38.png",
+            "w": 59,
+            "h": 56
+          },
+          {
+            "frame": 39,
+            "file": "opdata2/orb_39.png",
+            "w": 40,
+            "h": 46
+          },
+          {
+            "frame": 40,
+            "file": "opdata2/orb_40.png",
+            "w": 60,
+            "h": 51
+          },
+          {
+            "frame": 41,
+            "file": "opdata2/orb_41.png",
+            "w": 61,
+            "h": 53
+          },
+          {
+            "frame": 42,
+            "file": "opdata2/orb_42.png",
+            "w": 61,
+            "h": 52
+          },
+          {
+            "frame": 43,
+            "file": "opdata2/orb_43.png",
+            "w": 61,
+            "h": 51
+          },
+          {
+            "frame": 44,
+            "file": "opdata2/orb_44.png",
+            "w": 61,
+            "h": 49
+          },
+          {
+            "frame": 45,
+            "file": "opdata2/orb_45.png",
+            "w": 61,
+            "h": 49
+          },
+          {
+            "frame": 46,
+            "file": "opdata2/orb_46.png",
+            "w": 50,
+            "h": 43
+          },
+          {
+            "frame": 47,
+            "file": "opdata2/orb_47.png",
+            "w": 40,
+            "h": 40
+          },
+          {
+            "frame": 48,
+            "file": "opdata2/orb_48.png",
+            "w": 42,
+            "h": 42
+          },
+          {
+            "frame": 49,
+            "file": "opdata2/orb_49.png",
+            "w": 50,
+            "h": 50
+          },
+          {
+            "frame": 50,
+            "file": "opdata2/orb_50.png",
+            "w": 50,
+            "h": 50
+          },
+          {
+            "frame": 51,
+            "file": "opdata2/orb_51.png",
+            "w": 51,
+            "h": 50
+          },
+          {
+            "frame": 52,
+            "file": "opdata2/orb_52.png",
+            "w": 50,
+            "h": 50
+          }
+        ]
+      }
+    ]
+  }
+}
