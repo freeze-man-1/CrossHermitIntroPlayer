@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross Hermit — Intro Player</title>
+<style>
+  :root{ --bg:#0d0f14; --panel:#161922; --txt:#e6e9ef; --muted:#8b93a7; --accent:#e0566f; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--txt);
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap{ max-width:1140px; margin:0 auto; padding:18px 20px 60px; }
+  h1{ font-size:21px; margin:0 0 2px; font-weight:700; }
+  h1 span{ color:var(--muted); font-weight:400; }
+  .sub{ color:var(--muted); font-size:13px; margin:0 0 14px; }
+  #stage{ position:relative; width:100%; aspect-ratio:1024/768; background:#000;
+          border-radius:10px; overflow:hidden; }
+  #screen{ width:100%; height:100%; display:block; image-rendering:auto; }
+  #loading{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            flex-direction:column; gap:12px; color:var(--muted); font-size:14px; background:#000; }
+  .bar{ width:240px; height:4px; background:#222734; border-radius:3px; overflow:hidden; }
+  .bar > i{ display:block; height:100%; width:0; background:var(--accent); transition:width .2s; }
+  .controls{ display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  button{ background:var(--panel); color:var(--txt); border:1px solid #232838; border-radius:8px;
+          padding:8px 14px; font-size:14px; cursor:pointer; }
+  button.primary{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  button:disabled{ opacity:.45; cursor:default; }
+  input[type=range]{ flex:1; min-width:180px; accent-color:var(--accent); }
+  select{ background:var(--panel); color:var(--txt); border:1px solid #232838; border-radius:8px;
+           padding:7px 10px; font-size:14px; }
+  .row2{ display:flex; align-items:center; gap:14px; margin-top:10px; color:var(--muted); font-size:13px; flex-wrap:wrap; }
+  .pill{ background:var(--panel); border:1px solid #232838; border-radius:20px; padding:4px 11px; font-size:12px; }
+  label.chk{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
+  .note{ color:var(--muted); font-size:12px; margin-top:10px; }
+  a{ color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cross Hermit — Intro Player <span>(frame-exact replay)</span></h1>
+  <p class="sub">Renders the captured per-frame draw log against the extracted sprite set. Pick a language to play that translation.</p>
+
+  <div id="stage">
+    <canvas id="screen" width="1024" height="768"></canvas>
+    <div id="loading">
+      <div id="loadtext">Loading…</div>
+      <div class="bar"><i id="loadbar"></i></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="play" class="primary" disabled>▶ Play</button>
+    <button id="pause" disabled>❚❚ Pause</button>
+    <button id="restart" disabled>↺ Restart</button>
+    <input id="seek" type="range" min="0" max="100" value="0" step="1" disabled>
+    <span class="pill" id="framelbl">frame 0</span>
+  </div>
+
+  <div class="row2">
+    <label class="chk"><span>Language</span>
+      <select id="lang"></select>
+    </label>
+    <label class="chk"><input type="checkbox" id="bars" checked> letterbox/overlays</label>
+    <label class="chk"><input type="checkbox" id="grade"> film grade</label>
+    <label class="chk"><span>speed</span>
+      <select id="speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+      </select>
+    </label>
+    <span class="pill" id="scenelbl">scene 0</span>
+  </div>
+
+  <p class="note">Translating: edit the text textures in a <code>languages/&lt;code&gt;/</code> folder
+     (mainly <code>opdata_00.png</code>) and add the language to <code>languages/languages.json</code>.
+     See <code>README</code> in the repo.</p>
+
+  <audio id="audio" preload="auto"></audio>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<script>
+"use strict";
+/* ============================================================================
+   Cross Hermit intro player — PNG/URL edition (GitHub-Pages friendly).
+   Loads:
+     assets/replay.json.gz      the per-frame draw log
+     assets/overlay.json.gz     overlays (orange circles, white flash, hands-orb, op2 frames)
+     assets/textures/opdata/opdata_NN.png    48 sprite textures (default set)
+     assets/textures/opdata2/orb_NN.png      53 orb animation frames
+     assets/OPENING.mp3                       music
+     languages/languages.json                 dropdown list
+     languages/<code>/opdata_NN.png           per-language overrides (only text textures)
+   ========================================================================== */
+
+const cv=document.getElementById('screen'), g=cv.getContext('2d');
+const audio=document.getElementById('audio');
+const loadingEl=document.getElementById('loading');
+const loadtext=document.getElementById('loadtext'), loadbar=document.getElementById('loadbar');
+
+const FPS=60.14, MUSIC_START_FRAME=0;
+const NUM_OPDATA=48, NUM_ORB=53;
+
+// ---- state ----
+let REPLAY=null, OVERLAY=null, OP2=[], HANDS_ORB=null;
+let TEX={};                  // id -> {canvas,w,h}   (current, language-applied)
+let TEX_DEFAULT={};          // id -> {canvas,w,h}   (default set, never overwritten)
+let SPRITE_KF=[], SYSB_KF=[], SCENE_KF=[], OVL_KF=[], WHITE_KF=[], MAXF=0;
+let SCENE_BOUNDS=[];
+const RESORT_SCENES=new Set([1,2,5,7,10,15]);
+let frame=0, playing=false, raf=null, speed=1, lastReal=0;
+
+function tex(id){ return TEX[id]; }
+
+// ---------- loading helpers ----------
+async function fetchGzJson(url){
+  const res=await fetch(url);
+  if(!res.ok) throw new Error('fetch '+url+' -> '+res.status);
+  const buf=new Uint8Array(await res.arrayBuffer());
+  const txt=pako.ungzip(buf,{to:'string'});
+  return JSON.parse(txt);
+}
+function loadImage(url){
+  return new Promise((res,rej)=>{ const im=new Image();
+    im.onload=()=>res(im); im.onerror=()=>rej(new Error('img '+url)); im.src=url; });
+}
+function imgToTex(im){
+  const c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight;
+  c.getContext('2d').drawImage(im,0,0);
+  return {canvas:c,w:c.width,h:c.height};
+}
+function setProgress(p,msg){ loadbar.style.width=Math.round(p*100)+'%'; if(msg) loadtext.textContent=msg; }
+
+// ---------- default texture set ----------
+async function loadDefaultTextures(){
+  // OPDATA sprites
+  const tasks=[];
+  for(let i=0;i<NUM_OPDATA;i++){
+    const id=i, n=String(i).padStart(2,'0');
+    tasks.push(loadImage(`assets/textures/opdata/opdata_${n}.png`)
+      .then(im=>{ TEX_DEFAULT[id]=imgToTex(im); })
+      .catch(()=>{ /* a missing texture just won't draw */ }));
+  }
+  let done=0;
+  for(const t of tasks){ t.then(()=>{ done++; setProgress(0.15+0.55*done/tasks.length,
+        `Loading textures ${done}/${tasks.length}…`); }); }
+  await Promise.all(tasks);
+  TEX=Object.assign({},TEX_DEFAULT);
+  // OPDATA2 orb frames -> OP2[] of {img,w,h}
+  const oTasks=[];
+  for(let k=0;k<NUM_ORB;k++){
+    const n=String(k).padStart(2,'0');
+    oTasks.push(loadImage(`assets/textures/opdata2/orb_${n}.png`)
+      .then(im=>{ OP2[k]={img:im,w:im.naturalWidth,h:im.naturalHeight}; })
+      .catch(()=>{ OP2[k]=null; }));
+  }
+  await Promise.all(oTasks);
+}
+
+// ---------- language overrides ----------
+let LANGS=[];           // [{code,name,textures:[ids]}...]
+async function loadLanguageList(){
+  try{
+    const res=await fetch('languages/languages.json');
+    if(res.ok){ const j=await res.json(); LANGS=j.languages||[]; }
+  }catch(e){ LANGS=[]; }
+  // always offer the built-in default first
+  const sel=document.getElementById('lang');
+  sel.innerHTML='';
+  const optD=document.createElement('option'); optD.value='__default__';
+  optD.textContent=(LANGS.find(l=>l.code==='__default__')||{}).name||'Original (Japanese)';
+  sel.appendChild(optD);
+  for(const l of LANGS){ if(l.code==='__default__') continue;
+    const o=document.createElement('option'); o.value=l.code; o.textContent=l.name||l.code; sel.appendChild(o); }
+}
+// apply a language: start from defaults, override any texture present in languages/<code>/
+async function applyLanguage(code){
+  TEX=Object.assign({},TEX_DEFAULT);
+  if(code && code!=='__default__'){
+    const lang=LANGS.find(l=>l.code===code);
+    // which textures to try? the manifest list if given, else just the text atlas + orange plates
+    const ids=(lang&&lang.textures)||[0,22,23];
+    await Promise.all(ids.map(id=>{
+      const n=String(id).padStart(2,'0');
+      return loadImage(`languages/${code}/opdata_${n}.png`)
+        .then(im=>{ TEX[id]=imgToTex(im); })
+        .catch(()=>{ /* no override for this id -> keep default */ });
+    }));
+  }
+  render();
+}
+
+// ---------- overlay-derived images (hands orb, op2 already loaded above) ----------
+function decodeOverlayImages(){
+  if(OVERLAY && OVERLAY.hands_orb_png){
+    HANDS_ORB=new Image(); HANDS_ORB.src='data:image/png;base64,'+OVERLAY.hands_orb_png;
+  }
+  // If overlay carried its own op2_frames (older data), prefer the on-disk orb PNGs we
+  // already loaded; only fall back to embedded if disk ones are missing.
+  if((!OP2 || !OP2.some(Boolean)) && OVERLAY && OVERLAY.op2_frames){
+    OP2=OVERLAY.op2_frames.map(fr=>{
+      if(!fr) return null; const im=new Image(); im.src='data:image/png;base64,'+fr.png;
+      return {img:im,w:fr.w,h:fr.h};
+    });
+  }
+}
+
+// ============================ RENDER FUNCTIONS ============================
+// (preserved verbatim from the verified desktop player — all scene fixes intact)
+function buildIndex(){
+  MAXF=REPLAY.maxframe;
+  SPRITE_KF=Object.keys(REPLAY.sprites).map(Number).sort((a,b)=>a-b);
+  SYSB_KF=Object.keys(REPLAY.sysb).map(Number).sort((a,b)=>a-b);
+  SCENE_KF=Object.keys(REPLAY.scene_kf||{}).map(Number).sort((a,b)=>a-b);
+  OVL_KF=Object.keys(OVERLAY.overlays||{}).map(Number).sort((a,b)=>a-b);
+  WHITE_KF=OVL_KF.filter(f=>{const o=OVERLAY.overlays[f]; return o&&o.white&&o.white.length;});
+  SCENE_BOUNDS=Object.keys((REPLAY&&REPLAY.scene_kf)||{}).map(Number).sort((a,b)=>a-b);
+}
+
+function listAt(kfArr,store,frame){
+  // last keyframe <= frame (binary search)
+  let lo=0,hi=kfArr.length-1,res=kfArr[0];
+  while(lo<=hi){const m=(lo+hi)>>1; if(kfArr[m]<=frame){res=kfArr[m];lo=m+1;}else hi=m-1;}
+  return store[res]||[];
+}
+
+function drawRec(r){
+  const t=tex(r.tex); if(!t) return;
+  let a=(r.a==null?255:r.a)/255;
+  // ScaledT logo fade: the engine ramps the first tint channel (tR) 0->255 as the fade-in,
+  // while alpha stays 128. When tint is present and not flat-grey, fold tR into alpha.
+  if(r.t && (r.t[0]!==r.t[1] || r.t[1]!==r.t[2])){ a = a * (r.t[0]/255); }
+  if(a<=0) return;
+  g.globalAlpha=Math.min(1,a);
+  if((r.p==="Scaled"||r.p==="ScaledT") && r.dw){
+    // source rect = (su,sv,w,h); dest size = (dw,dh); dest centered on (x,y)
+    const sw=r.w||t.w, sh=r.h||t.h;
+    g.drawImage(t.canvas, r.su,r.sv,sw,sh, r.x-(r.dw>>1), r.y-(r.dh>>1), r.dw,r.dh);
+  } else {
+    let ssu=r.su, ssv=r.sv, sw=r.w, sh=r.h;
+    if(ssu>=t.w){ ssu=0; } if(ssv>=t.h){ ssv=0; }
+    if(ssu+sw>t.w) sw=t.w-ssu; if(ssv+sh>t.h) sh=t.h-ssv;
+    g.drawImage(t.canvas, ssu,ssv,sw,sh, r.x,r.y, r.w,r.h);
+  }
+  g.globalAlpha=1;
+}
+
+function sceneAt(frame){
+  if(!SCENE_BOUNDS.length) return 0;
+  let lo=0,hi=SCENE_BOUNDS.length-1,res=SCENE_BOUNDS[0];
+  while(lo<=hi){const m=(lo+hi)>>1; if(SCENE_BOUNDS[m]<=frame){res=SCENE_BOUNDS[m];lo=m+1;}else hi=m-1;}
+  return REPLAY.scene_kf[String(res)];
+}
+
+function renderScene7(frame, list){
+  const byTex={};
+  for(const r of list){ (byTex[r.tex]=byTex[r.tex]||[]).push(r); }
+  const draw=tx=>{ for(const r of (byTex[tx]||[])) drawRec(r); };
+  draw(31); draw(32);                       // landscape + sunset backgrounds
+  const bars=listAt(SYSB_KF,REPLAY.sysb,frame);
+  g.fillStyle="rgb(234,239,225)";
+  for(const b of bars){ if(b.tex===240 && b.w>2 && b.h>2) g.fillRect(b.x,b.y,b.w,b.h); }
+  draw(8);                                   // sage face behind
+  draw(4);                                   // blonde girl on top
+  draw(0);                                   // vertical text
+}
+
+function drawBars(frame){
+  if(!document.getElementById('bars').checked) return;
+  const list=listAt(SYSB_KF,REPLAY.sysb,frame);
+  const sc7=(sceneAt(frame)===7);
+  for(const b of list){
+    if(b.w<=2||b.h<=2) continue;                      // skip the 1x1 clear marker
+    if(sc7 && b.tex===240) continue;  // scene-7 cream already drawn in renderScene7
+    const area=b.w*b.h, full=1024*768;
+    if(b.tex===150||b.tex===80){ g.fillStyle="#000"; g.fillRect(b.x,b.y,b.w,b.h); }      // letterbox
+    else if(b.tex===240){ g.fillStyle="rgba(6,6,8,.9)"; g.fillRect(b.x,b.y,b.w,b.h); }     // ruins wall bands
+    else {
+      // pointer-tex System-B overlay. Top/bottom letterbox bands -> solid; large vignette -> light.
+      const isBand = b.h<=160 && (b.y<160 || b.y>600);
+      g.fillStyle = isBand ? "rgba(0,0,0,.96)" : (area>0.5*full ? "rgba(0,0,0,.18)" : "rgba(0,0,0,.4)");
+      g.fillRect(b.x,b.y,b.w,b.h);
+    }
+  }
+}
+
+function whiteAt(frame){
+  if(!WHITE_KF.length) return null;
+  // binary search: last white kf <= frame
+  let lo=0,hi=WHITE_KF.length-1,iLe=-1;
+  while(lo<=hi){const m=(lo+hi)>>1; if(WHITE_KF[m]<=frame){iLe=m;lo=m+1;}else hi=m-1;}
+  function boxA(kf){
+    const wl=OVERLAY.overlays[kf].white; let minx=1024,miny=768,maxx=0,maxy=0,maxa=0;
+    for(const wb of wl){ minx=Math.min(minx,wb.x);miny=Math.min(miny,wb.y);
+      maxx=Math.max(maxx,wb.x+wb.w);maxy=Math.max(maxy,wb.y+wb.h);maxa=Math.max(maxa,wb.a||255); }
+    return {minx,miny,maxx,maxy,a:maxa};
+  }
+  if(iLe<0){ // before first white kf: fade up from 0 if the next kf is close
+    const k1=WHITE_KF[0], b1=boxA(k1);
+    const gap=k1-frame;
+    if(gap>6) return null;            // not yet in the flash window
+    const t=1-(gap/6);                // ramp 0->b1.a over ~6 frames before k1
+    return {minx:b1.minx,miny:b1.miny,maxx:b1.maxx,maxy:b1.maxy,a:b1.a*Math.max(0,t)};
+  }
+  const k0=WHITE_KF[iLe], b0=boxA(k0);
+  if(iLe===WHITE_KF.length-1) return b0;            // at/after last white kf: hold
+  const k1=WHITE_KF[iLe+1];
+  if(k1-k0>12) return b0;                           // big gap => separate episode, no lerp
+  const b1=boxA(k1);
+  const t=(frame-k0)/(k1-k0);
+  return {
+    minx:b0.minx, miny:b0.miny, maxx:b0.maxx, maxy:b0.maxy,  // box is stable across the ramp
+    a: b0.a + (b1.a-b0.a)*t
+  };
+}
+
+function ovlAt(frame){
+  if(!OVL_KF.length) return null;
+  let lo=0,hi=OVL_KF.length-1,res=OVL_KF[0];
+  while(lo<=hi){const m=(lo+hi)>>1;if(OVL_KF[m]<=frame){res=OVL_KF[m];lo=m+1;}else hi=m-1;}
+  return OVERLAY.overlays[res];
+}
+
+function isBg(r){
+  if(r.p==="Scaled"||r.p==="ScaledT") return false;
+  const w=r.w||0, h=r.h||0, x=(typeof r.x==='number'?r.x:0);
+  return w>=1000 && h>=480 && x<=8;
+}
+
+function render(){
+  g.fillStyle="#000"; g.fillRect(0,0,1024,768);
+  const ovl=ovlAt(frame);
+  // Scene 7 has a CREAM backdrop made of large bars that the engine draws
+  // BEFORE the characters. Paint those as cream here (behind sprites). The
+  // later drawBars() pass skips them so they are not re-painted on top.
+  const _sc=sceneAt(frame);
+  // 1. white background: the engine tiles white bars around the characters, leaving a gap where
+  // sprites cover. To avoid black showing through that gap, fill the union (the full content band)
+  // white whenever white bars are present, at the max alpha seen (handles the fade-in/flash).
+  let white=whiteAt(frame);
+  // scene 9+ uses a BLACK base; the captured full-screen 'white' bar there is
+  // actually the engine's black clear (held flat alpha), so suppress it. Genuine
+  // bright flashes still reach near-opaque and are kept.
+  if(white && sceneAt(frame)>=9){
+    const fullCover=(white.maxx-white.minx)>=1000 && (white.maxy-white.miny)>=480;
+    if(fullCover) white=null;   // scene 9+ has a BLACK base in the source; the captured full-screen white ramp is a mis-tagged fade, suppress it so text/content stays readable on black
+  }
+  if(white && white.a>0.5){
+    g.globalAlpha=Math.min(1,white.a/255); g.fillStyle="#ffffff";
+    g.fillRect(white.minx,white.miny,white.maxx-white.minx,white.maxy-white.miny);
+    g.globalAlpha=1;
+  }
+  const list=listAt(SPRITE_KF,REPLAY.sprites,frame);
+  const sc=_sc;
+  if(sc===7){
+    renderScene7(frame, list);
+  } else {
+    let ordered;
+    if(RESORT_SCENES.has(sc)){
+      ordered = list.map((r,i)=>[r,i]).sort((a,b)=>{
+        const ba=isBg(a[0])?0:1, bb=isBg(b[0])?0:1;
+        return ba!==bb ? ba-bb : a[1]-b[1];
+      }).map(x=>x[0]);
+    } else {
+      ordered = list;   // pure engine seq order (ground truth)
+    }
+    for(const r of ordered) drawRec(r);
+  }
+  // 2. orange circles (tex 22/23) - additive, concentric expanding rings at impact point
+  if(ovl && ovl.add && ovl.add.length){
+    g.globalCompositeOperation='lighter';
+    for(const c of ovl.add){
+      const t=tex(c.tex); if(!t) continue;
+      // The whole composite plate (rings+text+bars) scales UP from the impact
+      // point: source = full texture, dest = quad of size (2*su x 2*sv) centred
+      // at (x,y). su/sv grow over time, so the rings EXPAND outward.
+      const dw=c.su*2, dh=c.sv*2;
+      g.drawImage(t.canvas, 0,0,t.w,t.h, c.x-dw/2, c.y-dh/2, dw,dh);
+    }
+    g.globalCompositeOperation='source-over';
+  }
+  // 3. OPDATA2 orb / teardrop - additive glow frames
+  if(ovl && ovl.orb && ovl.orb.length){
+    g.globalCompositeOperation='lighter';
+    for(const o of ovl.orb){
+      const fr=OP2[o.f]; if(!fr) continue;
+      g.globalAlpha=(o.a==null?255:o.a)/255;
+      const sc=(o.s==null?1:o.s), dw=fr.w*sc, dh=fr.h*sc;
+      g.drawImage(fr.img, o.x-dw/2, o.y-dh/2, dw, dh);
+    }
+    g.globalAlpha=1; g.globalCompositeOperation='source-over';
+  }
+  // hands-raised orb (real OPDATA tex5 cutout, additive)
+  if(HANDS_ORB && ovl && ovl.horb && ovl.horb.length){
+    g.globalCompositeOperation='lighter';
+    for(const o of ovl.horb){
+      g.globalAlpha=(o.a==null?1:o.a);
+      const s=o.sz||150;
+      g.drawImage(HANDS_ORB, o.x-s/2, o.y-s/2, s, s);
+    }
+    g.globalAlpha=1; g.globalCompositeOperation='source-over';
+  }
+  drawBars(frame);
+  if(document.getElementById('grade').checked){ g.fillStyle="rgba(40,30,20,0.10)"; g.fillRect(0,0,1024,768); }
+  // UI labels
+  document.getElementById('scenelbl').textContent='scene '+sceneAt(frame);
+  document.getElementById('framelbl').textContent='frame '+frame;
+  document.getElementById('seek').value=frame;
+}
+
+function loop(now){
+  if(!playing) return;
+  const dt=now-lastReal; lastReal=now;
+  frame+=Math.max(1,Math.round(speed*(dt/16.6667)));
+  if(frame>=MAXF){ frame=MAXF; playing=false; document.getElementById('play').textContent='▶ Replay'; if(audio)audio.pause(); }
+  render(); syncAudio(playing);
+  if(playing) raf=requestAnimationFrame(loop);
+}
+
+function syncAudio(playing){
+  if(!audio) return;
+  const t=(frame-MUSIC_START_FRAME)/FPS;
+  if(t<0){ if(!audio.paused) audio.pause(); audio.currentTime=0; return; }
+  if(Math.abs(audio.currentTime-t)>0.25) audio.currentTime=Math.max(0,t);
+  if(playing){ if(audio.paused) audio.play().catch(()=>{}); }
+  else if(!audio.paused) audio.pause();
+}
+
+// ============================ CONTROLS / BOOT ============================
+function setFrame(f){
+  frame=Math.max(0,Math.min(MAXF,f|0));
+  document.getElementById('seek').value=frame;
+  document.getElementById('framelbl').textContent='frame '+frame;
+  document.getElementById('scenelbl').textContent='scene '+sceneAt(frame);
+}
+
+document.getElementById('play').addEventListener('click',()=>{
+  if(playing) return;
+  if(raf){ cancelAnimationFrame(raf); raf=null; }
+  if(frame>=MAXF) frame=0;
+  playing=true; lastReal=performance.now();
+  document.getElementById('pause').disabled=false;
+  syncAudio(true);
+  raf=requestAnimationFrame(loop);
+});
+document.getElementById('pause').addEventListener('click',()=>{ playing=false; syncAudio(false); });
+document.getElementById('restart').addEventListener('click',()=>{
+  playing=false; setFrame(0); render(); syncAudio(false);
+});
+document.getElementById('seek').addEventListener('input',e=>{
+  setFrame(+e.target.value); render(); if(audio){ audio.currentTime=Math.max(0,frame/FPS); }
+});
+document.getElementById('speed').addEventListener('change',e=>{ speed=+e.target.value;
+  if(audio) audio.playbackRate=speed; });
+document.getElementById('bars').addEventListener('change',render);
+document.getElementById('grade').addEventListener('change',render);
+document.getElementById('lang').addEventListener('change',e=>applyLanguage(e.target.value));
+
+async function boot(){
+  try{
+    setProgress(0.02,'Loading replay data…');
+    REPLAY=await fetchGzJson('assets/replay.json.gz');
+    setProgress(0.10,'Loading overlays…');
+    OVERLAY=await fetchGzJson('assets/overlay.json.gz');
+    decodeOverlayImages();
+    setProgress(0.15,'Loading textures…');
+    await loadDefaultTextures();
+    setProgress(0.78,'Loading languages…');
+    await loadLanguageList();
+    audio.src='assets/OPENING.mp3';
+    buildIndex();
+    setProgress(0.95,'Finishing…');
+    const seek=document.getElementById('seek'); seek.max=MAXF; seek.disabled=false;
+    document.getElementById('play').disabled=false;
+    document.getElementById('restart').disabled=false;
+    setFrame(0); render();
+    setProgress(1,'Ready');
+    loadingEl.style.display='none';
+  }catch(err){
+    loadtext.textContent='Load error: '+err.message;
+    console.error(err);
+  }
+}
+boot();
+</script>
+</body>
+</html>
