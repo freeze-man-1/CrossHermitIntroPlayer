@@ -100,6 +100,7 @@ const loadingEl=document.getElementById('loading');
 const loadtext=document.getElementById('loadtext'), loadbar=document.getElementById('loadbar');
 
 const FPS=60.14, MUSIC_START_FRAME=0;
+const END_FRAME=16272;  // music end (~270.6s); trailing frames after this are blank capture padding
 const NUM_OPDATA=48, NUM_ORB=53;
 
 // ---- state ----
@@ -411,25 +412,37 @@ function render(){
 
 function loop(now){
   if(!playing) return;
-  const dt=now-lastReal; lastReal=now;
-  frame+=Math.max(1,Math.round(speed*(dt/16.6667)));
-  if(frame>=MAXF){ frame=MAXF; playing=false; document.getElementById('play').textContent='▶ Replay'; if(audio)audio.pause(); }
-  render(); syncAudio(playing);
+  // Drive the visual frame from the AUDIO clock so picture and music never drift.
+  // The music is the steady real-time reference; frame = currentTime * FPS.
+  // (At speed!=1 we scale the audio playbackRate, so currentTime already reflects it.)
+  if(audio && !audio.paused && audio.currentTime>0){
+    frame = Math.round(audio.currentTime*FPS) + MUSIC_START_FRAME;
+  } else {
+    const dt=now-lastReal; frame += Math.max(1, Math.round(speed*(dt/16.6667)));
+  }
+  lastReal=now;
+  if(frame>=END_FRAME){ frame=END_FRAME; playing=false;
+    document.getElementById('play').textContent='▶ Replay'; if(audio) audio.pause(); }
+  render();
+  // keep audio running but DON'T yank currentTime every frame (that caused the
+  // periodic jump); only correct on a large discrepancy or when (re)starting.
+  if(playing && audio && audio.paused) audio.play().catch(()=>{});
   if(playing) raf=requestAnimationFrame(loop);
 }
 
 function syncAudio(playing){
   if(!audio) return;
   const t=(frame-MUSIC_START_FRAME)/FPS;
-  if(t<0){ if(!audio.paused) audio.pause(); audio.currentTime=0; return; }
-  if(Math.abs(audio.currentTime-t)>0.25) audio.currentTime=Math.max(0,t);
+  // Set the audio position to match the current frame (used on play / seek / restart).
+  // During playback the loop derives frame FROM audio, so we don't re-set it every tick.
+  if(Math.abs(audio.currentTime-Math.max(0,t))>0.12) audio.currentTime=Math.max(0,t);
   if(playing){ if(audio.paused) audio.play().catch(()=>{}); }
   else if(!audio.paused) audio.pause();
 }
 
 // ============================ CONTROLS / BOOT ============================
 function setFrame(f){
-  frame=Math.max(0,Math.min(MAXF,f|0));
+  frame=Math.max(0,Math.min(END_FRAME,f|0));
   document.getElementById('seek').value=frame;
   document.getElementById('framelbl').textContent='frame '+frame;
   document.getElementById('scenelbl').textContent='scene '+sceneAt(frame);
@@ -471,7 +484,7 @@ async function boot(){
     audio.src='assets/OPENING.mp3';
     buildIndex();
     setProgress(0.95,'Finishing…');
-    const seek=document.getElementById('seek'); seek.max=MAXF; seek.disabled=false;
+    const seek=document.getElementById('seek'); seek.max=END_FRAME; seek.disabled=false;
     document.getElementById('play').disabled=false;
     document.getElementById('restart').disabled=false;
     setFrame(0); render();
